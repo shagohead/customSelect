@@ -2,7 +2,7 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 1.0.2
+ * @version 1.0.3
  */
 
 (function($){
@@ -11,9 +11,10 @@
 		customSelect: function(options) {
 			
 			var defaults = {
-				maxRows: 10,
-				rowHeight: 20,
+				element: 'div',
+				maxRows: false,
 				template: false,
+				closeOthers: true,
 				callbacks: {
 					selectOption: false,
 					clickText: false
@@ -38,10 +39,14 @@
 				
 				var disabled = false;
 				var containerClass = 'customSelectContainer';
-				var widthSet = false;
 
 				var currentSelect = $(this);
 				var id = currentSelect.attr('id');
+				var containerId = '';
+				if (id && id.length > 0) {
+					id = ' id="'+id+'"';
+					containerId = ' id="'+id+'Container"';
+				}
 				var name = currentSelect.attr('name');
 				var selected = {
 					text: false,
@@ -62,17 +67,17 @@
 					containerClass += ' customSelectContainer_state_disabled';
 					disabled = true;
 				}
-				var customSelectContainer = $('<div class="'+containerClass+'" id="'+id+'Container" />');
-				var customSelectInput = $('<input type="hidden" name="'+name+'" value="'+selected.value+'" id="'+id+'" class="customSelectValue" />');
-				var customSelectText = $('<div class="customSelectText" />');
-				var customSelectLeft = $('<div class="customSelectLeft" />');
-				var customSelectRight = $('<div class="customSelectRight" />');
-				var customSelectBack = $('<div class="customSelectBack" />');
-				var customSelectArrow = $('<div class="customSelectArrow" />');
-				var customSelectOptions = $('<div class="customSelectOptions" />');
-				var customSelectScroll = $('<div class="customSelectScroll" />');
+				var customSelectContainer = $('<'+options.element+' class="'+containerClass+'"'+containerId+' />');
+				var customSelectInput = $('<input type="hidden" name="'+name+'" value="'+selected.value+'"'+id+' class="customSelectValue" />');
+				var customSelectText = $('<'+options.element+' class="customSelectText" />');
+				var customSelectLeft = $('<'+options.element+' class="customSelectLeft" />');
+				var customSelectRight = $('<'+options.element+' class="customSelectRight" />');
+				var customSelectBack = $('<'+options.element+' class="customSelectBack" />');
+				var customSelectArrow = $('<'+options.element+' class="customSelectArrow" />');
+				var customSelectOptions = $('<'+options.element+' class="customSelectOptions" />');
+				var customSelectScroll = $('<'+options.element+' class="customSelectScroll" />');
 				for (i in selectOptions) {
-					var option = $('<div class="customSelectOption" rel="'+selectOptions[i].value+'">'+selectOptions[i].text+'</div>');
+					var option = $('<'+options.element+' class="customSelectOption" rel="'+selectOptions[i].value+'">'+selectOptions[i].text+'</'+options.element+'>');
 					selectOptionsDOM.push(option[0]);
 				}
 				if (selectOptions.length < 1) {
@@ -93,6 +98,7 @@
 				}
 				textElement.text(selected.text);
 				customSelectContainer.append(customSelectOptions);
+				customSelectOptions.css('width', customSelectContainer.width()+'px');
 				customSelectOptions.append(customSelectScroll);
 				for (i in selectOptionsDOM) {
 					customSelectScroll.append(selectOptionsDOM[i]);
@@ -102,16 +108,17 @@
 				if (disabled === false) {
 					
 					$(customSelectText).bind('click', function(){
-						if (!widthSet) {
-							customSelectOptions.width(customSelectContainer.width());
-							widthSet = true;
-						}
-
 						if (options.callbacks.clickText) {
 							options.callbacks.clickText($(this));
 						}
-						
-						customSelectOptions.toggle();
+						if (customSelectOptions.is(':visible')) {
+							customSelectOptions.hide();
+						} else {
+							if (options.closeOthers) {
+								$('.customSelectOptions').hide();
+							}
+							customSelectOptions.show();
+						}
 					});
 					
 					$(selectOptionsDOM).bind('click', function(){
@@ -132,9 +139,8 @@
 				$(selectOptionsDOM).bind('mouseleave', function(){
 					$(this).removeClass('hover');
 				});
-				if (options.maxRows && selectOptions.length > options.maxRows) {
-					var height = options.maxRows * options.rowHeight;
-					customSelectScroll.css('height', height+'px');
+				if (options.maxRows !== false && selectOptions.length > options.maxRows) {
+					customSelectScroll.css('height', (customSelectScroll.children(':first-child').height() * options.maxRows)+'px');
 					customSelectScroll.jScrollPane();
 				}
 				customSelectOptions.hide();
