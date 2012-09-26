@@ -141,6 +141,7 @@
 				});
 				if (options.maxRows !== false && selectOptions.length > options.maxRows) {
 					customSelectScroll.css('height', (customSelectScroll.children(':first-child').height() * options.maxRows)+'px');
+					
 					customSelectScroll.jScrollPane();
 				}
 				customSelectOptions.hide();
