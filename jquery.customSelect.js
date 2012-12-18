@@ -2,7 +2,7 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.1
+ * @version 2.2
  */
 
 (function($){
@@ -187,7 +187,6 @@
 
             if (data.disabled === false) {
                 $(data.dom.text).bind('click', function(){
-                    console.log(this)
                     if (data.settings.callbacks.clickText) {
                         data.settings.callbacks.clickText($(this));
                     }
