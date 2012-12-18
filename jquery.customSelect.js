@@ -2,162 +2,243 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 1.0.3
+ * @version 2.0
  */
 
 (function($){
-	$.fn.extend({
 
-		customSelect: function(options) {
-			
-			var defaults = {
-				element: 'div',
-				maxRows: false,
-				template: false,
-				closeOthers: true,
-				callbacks: {
-					selectOption: false,
-					clickText: false
-				}
-			};
-			
-			var options = $.extend(defaults, options);
-			
-			return this.each(function() {
-				
-				if (!jQuery().jScrollPane) {
-					if (console) {
-						if (console.error) {
-							console.error('jQuery plugin "jScrollPane" not installed');
-						} else {
-							console.log('jQuery plugin "jScrollPane" not installed');
-						}
-					}
-					return false;
-				}
-				
-				
-				var disabled = false;
-				var containerClass = 'customSelectContainer';
+	var methods = {
+        init: function(settings){
+            settings = $.extend({
+                element: 'div',
+                maxRows: false,
+                template: false,
+                closeOthers: true,
+                copyClasses: true,
+                copyData: true,
+                callbacks: {
+                    initDefaultOption: false,
+                    selectOption: false,
+                    afterSelectOption: false,
+                    clickText: false
+                }
+            }, settings);
+            var binded = this.length;
 
-				var currentSelect = $(this);
-				var id = currentSelect.attr('id');
-				var containerId = '';
-				if (id && id.length > 0) {
-					id = ' id="'+id+'"';
-					containerId = ' id="'+id+'Container"';
-				}
-				var name = currentSelect.attr('name');
-				var selected = {
-					text: false,
-					value: currentSelect.val()
-				}
-				var selectOptions = [];
-				var selectOptionsDOM = [];
-				currentSelect.find('option').each(function(){
-					if ($(this).is(':selected')) {
-						selected.text = $(this).text();
-					}
-					selectOptions[selectOptions.length] = {
-						text: $(this).text(),
-						value: $(this).attr('value')
-					};
-				});
-				if (currentSelect.attr('disabled')) {
-					containerClass += ' customSelectContainer_state_disabled';
-					disabled = true;
-				}
-				var customSelectContainer = $('<'+options.element+' class="'+containerClass+'"'+containerId+' />');
-				var customSelectInput = $('<input type="hidden" name="'+name+'" value="'+selected.value+'"'+id+' class="customSelectValue" />');
-				var customSelectText = $('<'+options.element+' class="customSelectText" />');
-				var customSelectLeft = $('<'+options.element+' class="customSelectLeft" />');
-				var customSelectRight = $('<'+options.element+' class="customSelectRight" />');
-				var customSelectBack = $('<'+options.element+' class="customSelectBack" />');
-				var customSelectArrow = $('<'+options.element+' class="customSelectArrow" />');
-				var customSelectOptions = $('<'+options.element+' class="customSelectOptions" />');
-				var customSelectScroll = $('<'+options.element+' class="customSelectScroll" />');
-				for (i in selectOptions) {
-					var option = $('<'+options.element+' class="customSelectOption" rel="'+selectOptions[i].value+'">'+selectOptions[i].text+'</'+options.element+'>');
-					selectOptionsDOM.push(option[0]);
-				}
-				if (selectOptions.length < 1) {
-					return false;
-				}
-				currentSelect.replaceWith(customSelectContainer);
-				customSelectContainer.append(customSelectInput);
-				customSelectContainer.append(customSelectText);
-				customSelectText.append(customSelectLeft);
-				customSelectLeft.append(customSelectRight);
-				customSelectRight.append(customSelectBack);
-				customSelectBack.append(customSelectArrow);
-				if (options.template) {
-					var textElement = $(options.template);
-					customSelectArrow.append(textElement);
-				} else {
-					var textElement = customSelectArrow;
-				}
-				textElement.text(selected.text);
-				customSelectContainer.append(customSelectOptions);
-				customSelectOptions.css('width', customSelectContainer.width()+'px');
-				customSelectOptions.append(customSelectScroll);
-				for (i in selectOptionsDOM) {
-					customSelectScroll.append(selectOptionsDOM[i]);
-				}
+            return this.each(function(index, element){
+                var object = this;
+                var data = $(object).data();
+                data.settings = settings;
+                data.dom = {};
 
-				// Semen: Добавил проверку disable в селекте
-				if (disabled === false) {
-					
-					$(customSelectText).bind('click', function(){
-						if (options.callbacks.clickText) {
-							options.callbacks.clickText($(this));
-						}
-						if (customSelectOptions.is(':visible')) {
-							customSelectOptions.hide();
-						} else {
-							if (options.closeOthers) {
-								$('.customSelectOptions').hide();
-							}
-							customSelectOptions.show();
-						}
-					});
-					
-					$(selectOptionsDOM).bind('click', function(){
-						if (options.callbacks.selectOption) {
-							options.callbacks.selectOption($(this));
-						}
-						customSelectInput.val($(this).attr('rel'));
-						textElement.text($(this).text());
-						customSelectOptions.hide();
-						customSelectInput.change();
-					});	
-				}
-				
+                if (!jQuery().jScrollPane) {
+                    if (console) {
+                        if (console.error) {
+                            console.error('jQuery plugin "jScrollPane" not installed');
+                        } else {
+                            console.log('jQuery plugin "jScrollPane" not installed');
+                        }
+                    }
+                    return false;
+                }
 
-				$(selectOptionsDOM).bind('mouseover', function(){
-					$(this).addClass('hover');
-				});
-				$(selectOptionsDOM).bind('mouseleave', function(){
-					$(this).removeClass('hover');
-				});
-				if (options.maxRows !== false && selectOptions.length > options.maxRows) {
-					customSelectScroll.css('height', (customSelectScroll.children(':first-child').height() * options.maxRows)+'px');
-					
-					customSelectScroll.jScrollPane();
-				}
-				customSelectOptions.hide();
-				$(document).click(function(){
-					customSelectOptions.hide();
-				});
-				customSelectContainer.click(function(event){
-					event.stopPropagation();
-				});
-				$(document).keyup(function(event){
-					if (event.keyCode == 27) {
-						customSelectOptions.hide();
-					}
-				});
-			});
-		}
-	});
+                var currentSelect = $(this);
+                var container_class = 'customSelectContainer';
+                data.disabled = false;
+                data.name = currentSelect.attr('name');
+                data.selected = {
+                    text: false,
+                    value: currentSelect.val()
+                }
+
+                if (currentSelect.attr('disabled')) {
+                    container_class += ' customSelectContainer_state_disabled';
+                    data.disabled = true;
+                }
+
+                if (currentSelect.attr('class')) {
+                    container_class += ' '+currentSelect.attr('class');
+                }
+
+                data.dom.text = $('<'+data.settings.element+' class="customSelectText" />');
+                data.dom.left = $('<'+data.settings.element+' class="customSelectLeft" />');
+                data.dom.right = $('<'+data.settings.element+' class="customSelectRight" />');
+                data.dom.back = $('<'+data.settings.element+' class="customSelectBack" />');
+                data.dom.arrow = $('<'+data.settings.element+' class="customSelectArrow" />');
+                data.dom.scroll = $('<'+data.settings.element+' class="customSelectScroll" />');
+                data.dom.options = $('<'+data.settings.element+' class="customSelectOptions" />');
+                data.dom.container = $('<'+data.settings.element+' class="'+container_class+'" />');
+                data.dom.input = $('<input type="hidden" name="'+data.name+'" value="'+data.selected.value+'" class="customSelectValue" />');
+
+                data.items = [];
+                data.dom.items = [];
+
+                currentSelect.find('option').each(function(){
+                    if ($(this).is(':selected')) {
+                        data.selected.text = $(this).text();
+                    }
+                    data.items.push({
+                        text: $(this).text(),
+                        value: $(this).attr('value')
+                    });
+                });
+
+                /*
+                if (data.items.length < 1) {
+                    if (console) {
+                        if (console.error) {
+                            console.error('Items length less than 1');
+                        } else {
+                            console.log('Items length less than 1');
+                        }
+                    }
+                    return false;
+                }
+                */
+
+                currentSelect.hide();
+                currentSelect.removeAttr('name');
+                currentSelect.after(data.dom.container);
+                data.dom.container.append(data.dom.input);
+                data.dom.container.append(data.dom.text);
+                data.dom.text.append(data.dom.left);
+                data.dom.left.append(data.dom.right);
+                data.dom.right.append(data.dom.back);
+                data.dom.back.append(data.dom.arrow);
+
+                if (data.settings.template) {
+                    data.dom.textElement = $(data.settings.template);
+                    data.dom.arrow.append(data.dom.textElement);
+                } else {
+                    data.dom.textElement = data.dom.arrow;
+                }
+                data.dom.textElement.text(data.selected.text);
+
+                data.dom.container.append(data.dom.options);
+                data.dom.options.css('width', data.dom.container.width());
+                data.dom.options.append(data.dom.scroll);
+
+                $(object).data(data);
+                methods.setItems.call(object);
+                methods.applyEvents.call(object);
+            	data.dom.options.hide();
+            });
+        },
+
+        data: function(){
+            return $(this).data();
+        },
+
+        setData: function(){
+            var data = $(this).data();
+            return data[arguments[0]] = arguments[1];
+        },
+
+        setOption: function(){
+            var data = $(this).data();
+            return data.settings[arguments[0]] = arguments[1];
+        },
+
+        setItems: function(items){
+            var data = $(this).data();
+            if (items) {
+            	data.items = items;
+            }
+            data.dom.items = [];
+            for (i in data.items) {
+                var option = $('<'+data.settings.element+' class="customSelectOption" rel="'+data.items[i].value+'">'+data.items[i].text+'</'+data.settings.element+'>');
+                data.dom.items.push(option[0]);
+            }
+
+            data.dom.scroll.html('');
+            for (i in data.dom.items) {
+                data.dom.scroll.append(data.dom.items[i]);
+            }
+
+            if (data.settings.maxRows !== false && data.items.length > data.settings.maxRows) {
+                data.dom.scroll.css('height', (data.dom.scroll.children(':first-child').height() * data.settings.maxRows)+'px');
+                data.dom.scroll.jScrollPane();
+            }
+            $(this).data(data);
+        },
+
+        setItemsJSON: function(items){
+        	data_items = [];
+        	for (i in items) {
+        		data_items.push({
+        			text: items[i].text,
+        			value: items[i].value
+        		})
+        	}
+            $(this).data('items', data_items);
+        	methods.setItems.call(this);
+        	methods.applyEvents.call(this);
+        },
+
+        applyEvents: function(){
+            var object = this;
+            var data = $(this).data();
+
+            $(data.dom.text).unbind('click');
+            $(document).off(data.dom.items);
+
+            if (data.disabled === false) {
+                $(data.dom.text).bind('click', function(){
+                    console.log(this)
+                    if (data.settings.callbacks.clickText) {
+                        data.settings.callbacks.clickText($(this));
+                    }
+                    if (data.dom.options.is(':visible')) {
+                        data.dom.options.hide();
+                    } else {
+                        if (data.settings.closeOthers) {
+                            $('.customSelectOptions').hide();
+                        }
+                        data.dom.options.show();
+                    }
+                });
+                
+                $(data.dom.items).on('click', function(){
+                    if (data.settings.callbacks.selectOption) {
+                        data.settings.callbacks.selectOption($(this));
+                    }
+                    data.dom.input.val($(this).attr('rel'));
+                    data.dom.textElement.text($(this).text());
+                    data.dom.options.hide();
+                    data.dom.input.change();
+		            $(object).data(data);
+                }); 
+            }
+
+            $(data.dom.items).on('mouseover', function(){
+                $(this).addClass('hover');
+            });
+            $(data.dom.items).on('mouseleave', function(){
+                $(this).removeClass('hover');
+            });
+
+            $(document).click(function(){
+                data.dom.options.hide();
+            });
+            data.dom.container.click(function(event){
+                event.stopPropagation();
+            });
+            $(document).keyup(function(event){
+                if (event.keyCode == 27) {
+                    data.dom.options.hide();
+                }
+            });
+    	}
+	};
+
+    $.fn.customSelect = function(request){
+        if (methods[request]) {
+            return methods[request].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof request === 'object' || !request) {
+            return methods.init.apply(this, arguments);
+        } else {
+            $.error('Method '+request+' does not exist on jQuery.tooltip');
+        }
+    };
 
 })(jQuery);
