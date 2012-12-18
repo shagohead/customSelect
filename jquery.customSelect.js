@@ -2,12 +2,12 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.0
+ * @version 2.1
  */
 
 (function($){
 
-	var methods = {
+    var methods = {
         init: function(settings){
             settings = $.extend({
                 element: 'div',
@@ -46,10 +46,6 @@
                 var container_class = 'customSelectContainer';
                 data.disabled = false;
                 data.name = currentSelect.attr('name');
-                data.selected = {
-                    text: false,
-                    value: currentSelect.val()
-                }
 
                 if (currentSelect.attr('disabled')) {
                     container_class += ' customSelectContainer_state_disabled';
@@ -60,6 +56,23 @@
                     container_class += ' '+currentSelect.attr('class');
                 }
 
+                data.items = [];
+                data.dom.items = [];
+                data.selected = {};
+
+                currentSelect.find('option').each(function(){
+                    if ($(this).is(':selected')) {
+                        data.selected = {
+                            text: $(this).text(),
+                            value: $(this).attr('value')
+                        };
+                    }
+                    data.items.push({
+                        text: $(this).text(),
+                        value: $(this).attr('value')
+                    });
+                });
+
                 data.dom.text = $('<'+data.settings.element+' class="customSelectText" />');
                 data.dom.left = $('<'+data.settings.element+' class="customSelectLeft" />');
                 data.dom.right = $('<'+data.settings.element+' class="customSelectRight" />');
@@ -68,20 +81,7 @@
                 data.dom.scroll = $('<'+data.settings.element+' class="customSelectScroll" />');
                 data.dom.options = $('<'+data.settings.element+' class="customSelectOptions" />');
                 data.dom.container = $('<'+data.settings.element+' class="'+container_class+'" />');
-                data.dom.input = $('<input type="hidden" name="'+data.name+'" value="'+data.selected.value+'" class="customSelectValue" />');
-
-                data.items = [];
-                data.dom.items = [];
-
-                currentSelect.find('option').each(function(){
-                    if ($(this).is(':selected')) {
-                        data.selected.text = $(this).text();
-                    }
-                    data.items.push({
-                        text: $(this).text(),
-                        value: $(this).attr('value')
-                    });
-                });
+                data.dom.input = $('<input type="hidden" name="'+data.name+'" value="" class="customSelectValue" />');
 
                 /*
                 if (data.items.length < 1) {
@@ -112,16 +112,15 @@
                 } else {
                     data.dom.textElement = data.dom.arrow;
                 }
-                data.dom.textElement.text(data.selected.text);
 
                 data.dom.container.append(data.dom.options);
                 data.dom.options.css('width', data.dom.container.width());
                 data.dom.options.append(data.dom.scroll);
 
                 $(object).data(data);
-                methods.setItems.call(object);
+                methods.setItems.call(object, true);
                 methods.applyEvents.call(object);
-            	data.dom.options.hide();
+                data.dom.options.hide();
             });
         },
 
@@ -139,11 +138,15 @@
             return data.settings[arguments[0]] = arguments[1];
         },
 
-        setItems: function(items){
+        setItems: function(not_update_selected){
             var data = $(this).data();
-            if (items) {
-            	data.items = items;
+
+            if (!not_update_selected) {
+                data.selected = data.items[0];
+                data.dom.input.val(data.selected.value);
+                data.dom.textElement.text(data.selected.text);
             }
+
             data.dom.items = [];
             for (i in data.items) {
                 var option = $('<'+data.settings.element+' class="customSelectOption" rel="'+data.items[i].value+'">'+data.items[i].text+'</'+data.settings.element+'>');
@@ -163,16 +166,16 @@
         },
 
         setItemsJSON: function(items){
-        	data_items = [];
-        	for (i in items) {
-        		data_items.push({
-        			text: items[i].text,
-        			value: items[i].value
-        		})
-        	}
+            data_items = [];
+            for (i in items) {
+                data_items.push({
+                    text: items[i].text,
+                    value: items[i].value
+                })
+            }
             $(this).data('items', data_items);
-        	methods.setItems.call(this);
-        	methods.applyEvents.call(this);
+            methods.setItems.call(this);
+            methods.applyEvents.call(this);
         },
 
         applyEvents: function(){
@@ -206,7 +209,7 @@
                     data.dom.textElement.text($(this).text());
                     data.dom.options.hide();
                     data.dom.input.change();
-		            $(object).data(data);
+                    $(object).data(data);
                 }); 
             }
 
@@ -228,8 +231,8 @@
                     data.dom.options.hide();
                 }
             });
-    	}
-	};
+        }
+    };
 
     $.fn.customSelect = function(request){
         if (methods[request]) {
