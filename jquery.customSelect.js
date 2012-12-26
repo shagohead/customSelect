@@ -2,7 +2,7 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.2
+ * @version 2.3
  */
 
 (function($){
@@ -23,7 +23,6 @@
                     clickText: false
                 }
             }, settings);
-            var binded = this.length;
 
             return this.each(function(index, element){
                 var object = this;
@@ -118,7 +117,7 @@
                 data.dom.options.append(data.dom.scroll);
 
                 $(object).data(data);
-                methods.setItems.call(object, true);
+                methods.setItems.call(object);
                 methods.applyEvents.call(object);
                 data.dom.options.hide();
             });
@@ -128,24 +127,18 @@
             return $(this).data();
         },
 
-        setData: function(){
-            var data = $(this).data();
-            return data[arguments[0]] = arguments[1];
-        },
-
         setOption: function(){
             var data = $(this).data();
             return data.settings[arguments[0]] = arguments[1];
         },
 
-        setItems: function(not_update_selected){
+        setItems: function(){
             var data = $(this).data();
 
-            if (!not_update_selected) {
-                data.selected = data.items[0];
-                data.dom.input.val(data.selected.value);
-                data.dom.textElement.text(data.selected.text);
-            }
+            data.index = 0;
+            data.selected = data.items[0];
+            data.dom.input.val(data.selected.value);
+            data.dom.textElement.text(data.selected.text);
 
             data.dom.items = [];
             for (i in data.items) {
@@ -168,10 +161,15 @@
         setItemsJSON: function(items){
             data_items = [];
             for (i in items) {
-                data_items.push({
-                    text: items[i].text,
-                    value: items[i].value
-                })
+                if (typeof items[i] == 'object') {
+                    topush = items[i];
+                } else {
+                    topush = {
+                        text: items[i],
+                        value: items[i]
+                    };
+                }
+                data_items.push(topush);
             }
             $(this).data('items', data_items);
             methods.setItems.call(this);
@@ -201,6 +199,7 @@
                 });
                 
                 $(data.dom.items).on('click', function(){
+                    data.index = $(this).index();
                     if (data.settings.callbacks.selectOption) {
                         data.settings.callbacks.selectOption($(this));
                     }
