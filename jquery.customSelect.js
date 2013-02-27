@@ -2,8 +2,18 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.3
+ * @version 2.4
  */
+
+function clone(obj) {
+    var target = {};
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            target[i] = obj[i];
+        }
+    }
+    return target;
+}
 
 (function($){
 
@@ -27,7 +37,8 @@
             return this.each(function(index, element){
                 var object = this;
                 var data = $(object).data();
-                data.settings = settings;
+                data.settings = clone(settings);
+                data.settings.callbacks = clone(settings.callbacks);
                 data.dom = {};
 
                 if (!jQuery().jScrollPane) {
@@ -82,19 +93,6 @@
                 data.dom.container = $('<'+data.settings.element+' class="'+container_class+'" />');
                 data.dom.input = $('<input type="hidden" name="'+data.name+'" value="" class="customSelectValue" />');
 
-                /*
-                if (data.items.length < 1) {
-                    if (console) {
-                        if (console.error) {
-                            console.error('Items length less than 1');
-                        } else {
-                            console.log('Items length less than 1');
-                        }
-                    }
-                    return false;
-                }
-                */
-
                 currentSelect.hide();
                 currentSelect.removeAttr('name');
                 currentSelect.after(data.dom.container);
@@ -123,31 +121,31 @@
             });
         },
 
-        data: function(){
+        data: function() {
             return $(this).data();
         },
 
-        setOption: function(){
+        setOption: function() {
             var data = $(this).data();
             return data.settings[arguments[0]] = arguments[1];
         },
 
-        setItems: function(){
+        setItems: function() {
             var data = $(this).data();
 
             data.index = 0;
             data.selected = data.items[0];
             data.dom.input.val(data.selected.value);
             data.dom.textElement.text(data.selected.text);
-
             data.dom.items = [];
-            for (i in data.items) {
+
+            for (var i = 0; i < data.items.length; i++) {
                 var option = $('<'+data.settings.element+' class="customSelectOption" rel="'+data.items[i].value+'">'+data.items[i].text+'</'+data.settings.element+'>');
                 data.dom.items.push(option[0]);
             }
 
             data.dom.scroll.html('');
-            for (i in data.dom.items) {
+            for (var i = 0; i < data.dom.items.length; i++) {
                 data.dom.scroll.append(data.dom.items[i]);
             }
 
@@ -159,7 +157,7 @@
         },
 
         setItemsJSON: function(items){
-            data_items = [];
+            var data_items = [];
             for (i in items) {
                 if (typeof items[i] == 'object') {
                     topush = items[i];
