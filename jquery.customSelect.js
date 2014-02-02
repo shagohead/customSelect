@@ -2,7 +2,7 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.4
+ * @version 2.5
  */
 
 function clone(obj) {
