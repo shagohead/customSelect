@@ -111,12 +111,12 @@ function clone(obj) {
                 }
 
                 data.dom.container.append(data.dom.options);
-                data.dom.options.css('width', data.dom.container.width());
                 data.dom.options.append(data.dom.scroll);
 
                 $(object).data(data);
                 methods.setItems.call(object);
                 methods.applyEvents.call(object);
+                data.dom.options.css('width', data.dom.container.width());
                 data.dom.options.hide();
             });
         },
