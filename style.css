@@ -32,17 +32,17 @@
 	background: -ms-linear-gradient(top,  #ffffff 0%,#e7e7e7 100%);
 	background: linear-gradient(to bottom,  #ffffff 0%,#e7e7e7 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e7e7e7',GradientType=0 );
-	margin: -29px 0 0;
+	margin: -27px 0 0;
 	-webkit-box-shadow: 0 3px 8px #adadac;
 	box-shadow: 0 3px 8px #adadac;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
 }
 .customSelectScroll {}
 .customSelectOption {
 	display: block;
 	font-size: 16px;
-	padding: 3px 8px 4px;
+	padding: 3px 9px 4px;
 	border-bottom: 1px solid #d1d1d1;
 }
 .customSelectOption:last-child {

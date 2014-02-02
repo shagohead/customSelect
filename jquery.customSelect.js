@@ -15,10 +15,10 @@ function clone(obj) {
     return target;
 }
 
-(function($){
+(function($) {
 
     var methods = {
-        init: function(settings){
+        init: function(settings) {
             settings = $.extend({
                 element: 'div',
                 maxRows: false,
@@ -26,31 +26,19 @@ function clone(obj) {
                 closeOthers: true,
                 copyClasses: true,
                 copyData: true,
-                callbacks: {
-                    initDefaultOption: false,
-                    selectOption: false,
-                    afterSelectOption: false,
-                    clickText: false
-                }
+                // events callbacks:
+                onSelect: false,
+                onClick: false,
+                onOpen: false,
+                onClose: false
             }, settings);
 
-            return this.each(function(index, element){
+            return this.each(function(index, element) {
                 var object = this;
                 var data = $(object).data();
                 data.settings = clone(settings);
                 data.settings.callbacks = clone(settings.callbacks);
                 data.dom = {};
-
-                if (!jQuery().jScrollPane) {
-                    if (console) {
-                        if (console.error) {
-                            console.error('jQuery plugin "jScrollPane" not installed');
-                        } else {
-                            console.log('jQuery plugin "jScrollPane" not installed');
-                        }
-                    }
-                    return false;
-                }
 
                 var currentSelect = $(this);
                 var container_class = 'customSelectContainer';
@@ -63,14 +51,14 @@ function clone(obj) {
                 }
 
                 if (currentSelect.attr('class')) {
-                    container_class += ' '+currentSelect.attr('class');
+                    container_class += ' ' + currentSelect.attr('class');
                 }
 
                 data.items = [];
                 data.dom.items = [];
                 data.selected = {};
 
-                currentSelect.find('option').each(function(){
+                currentSelect.find('option').each(function() {
                     if ($(this).is(':selected')) {
                         data.selected = {
                             text: $(this).text(),
@@ -83,15 +71,16 @@ function clone(obj) {
                     });
                 });
 
-                data.dom.text = $('<'+data.settings.element+' class="customSelectText" />');
-                data.dom.left = $('<'+data.settings.element+' class="customSelectLeft" />');
-                data.dom.right = $('<'+data.settings.element+' class="customSelectRight" />');
-                data.dom.back = $('<'+data.settings.element+' class="customSelectBack" />');
-                data.dom.arrow = $('<'+data.settings.element+' class="customSelectArrow" />');
-                data.dom.scroll = $('<'+data.settings.element+' class="customSelectScroll" />');
-                data.dom.options = $('<'+data.settings.element+' class="customSelectOptions" />');
-                data.dom.container = $('<'+data.settings.element+' class="'+container_class+'" />');
-                data.dom.input = $('<input type="hidden" name="'+data.name+'" value="" class="customSelectValue" />');
+                data.dom.text = $('<' + data.settings.element + ' class="customSelectText" />');
+                data.dom.left = $('<' + data.settings.element + ' class="customSelectLeft" />');
+                data.dom.right = $('<' + data.settings.element + ' class="customSelectRight" />');
+                data.dom.back = $('<' + data.settings.element + ' class="customSelectBack" />');
+                data.dom.arrow = $('<' + data.settings.element + ' class="customSelectArrow" />');
+                data.dom.scroll = $('<' + data.settings.element + ' class="customSelectScroll" />');
+                data.dom.options = $('<' + data.settings.element + ' class="customSelectOptions" />');
+                data.dom.container = $('<' + data.settings.element + ' class="' + container_class + '" />');
+                data.dom.input = $('<input type="hidden" name="' + data.name +
+                    '" value="" class="customSelectValue" />');
 
                 currentSelect.hide();
                 currentSelect.removeAttr('name');
@@ -130,17 +119,18 @@ function clone(obj) {
             return data.settings[arguments[0]] = arguments[1];
         },
 
-        setItems: function() {
+        setItems: function(selected) {
             var data = $(this).data();
 
             data.index = 0;
-            data.selected = data.items[0];
+            data.selected = (selected) ? selected : data.items[0];
             data.dom.input.val(data.selected.value);
             data.dom.textElement.text(data.selected.text);
             data.dom.items = [];
 
             for (var i = 0; i < data.items.length; i++) {
-                var option = $('<'+data.settings.element+' class="customSelectOption" rel="'+data.items[i].value+'">'+data.items[i].text+'</'+data.settings.element+'>');
+                var option = $('<' + data.settings.element + ' class="customSelectOption" rel="' +
+                    data.items[i].value + '">' + data.items[i].text + '</' + data.settings.element + '>');
                 data.dom.items.push(option[0]);
             }
 
@@ -150,23 +140,21 @@ function clone(obj) {
             }
 
             if (data.settings.maxRows !== false && data.items.length > data.settings.maxRows) {
-                data.dom.scroll.css('height', (data.dom.scroll.children(':first-child').height() * data.settings.maxRows)+'px');
-                data.dom.scroll.jScrollPane();
+                data.dom.scroll.css(
+                    'height',
+                    (data.dom.scroll.children(':first-child').height() * data.settings.maxRows) + 'px');
+                methods.applyScroll(data.dom.scroll);
             }
             $(this).data(data);
         },
 
-        setItemsJSON: function(items){
+        setItemsJSON: function(items) {
             var data_items = [];
             for (i in items) {
-                if (typeof items[i] == 'object') {
-                    topush = items[i];
-                } else {
-                    topush = {
-                        text: items[i],
-                        value: items[i]
-                    };
-                }
+                var topush = (typeof items[i] == 'object') ? items[i] : {
+                    text: items[i],
+                    value: items[i]
+                };
                 data_items.push(topush);
             }
             $(this).data('items', data_items);
@@ -174,7 +162,21 @@ function clone(obj) {
             methods.applyEvents.call(this);
         },
 
-        applyEvents: function(){
+        applyScroll: function(scroll) {
+            if (!jQuery().jScrollPane) {
+                if (console) {
+                    if (console.error) {
+                        console.error('jQuery plugin "jScrollPane" not installed');
+                    } else {
+                        console.log('jQuery plugin "jScrollPane" not installed');
+                    }
+                }
+                return false;
+            }
+            scroll.jScrollPane();
+        },
+
+        applyEvents: function() {
             var object = this;
             var data = $(this).data();
 
@@ -182,61 +184,82 @@ function clone(obj) {
             $(document).off(data.dom.items);
 
             if (data.disabled === false) {
-                $(data.dom.text).bind('click', function(){
-                    if (data.settings.callbacks.clickText) {
-                        data.settings.callbacks.clickText($(this));
+                $(data.dom.text).bind('click', function() {
+                    if (data.settings.onClick) {
+                        data.settings.onClick($(this));
                     }
-                    if (data.dom.options.is(':visible')) {
-                        data.dom.options.hide();
-                    } else {
-                        if (data.settings.closeOthers) {
-                            $('.customSelectOptions').hide();
-                        }
-                        data.dom.options.show();
-                    }
+                    methods.toggle.call(object);
                 });
-                
-                $(data.dom.items).on('click', function(){
+
+                $(data.dom.items).on('click', function() {
                     data.index = $(this).index();
-                    if (data.settings.callbacks.selectOption) {
-                        data.settings.callbacks.selectOption($(this));
+                    if (data.settings.onSelect) {
+                        data.settings.onSelect($(this));
                     }
                     data.dom.input.val($(this).attr('rel'));
                     data.dom.textElement.text($(this).text());
                     data.dom.options.hide();
                     data.dom.input.change();
                     $(object).data(data);
-                }); 
+                });
             }
 
-            $(data.dom.items).on('mouseover', function(){
+            $(data.dom.items).on('mouseover', function() {
                 $(this).addClass('hover');
             });
-            $(data.dom.items).on('mouseleave', function(){
+            $(data.dom.items).on('mouseleave', function() {
                 $(this).removeClass('hover');
             });
 
-            $(document).click(function(){
+            $(document).click(function() {
                 data.dom.options.hide();
             });
-            data.dom.container.click(function(event){
+            data.dom.container.click(function(event) {
                 event.stopPropagation();
             });
-            $(document).keyup(function(event){
+            $(document).keyup(function(event) {
                 if (event.keyCode == 27) {
                     data.dom.options.hide();
                 }
             });
+        },
+
+        open: function() {
+            var data = $(this).data();
+            if (data.settings.onOpen) {
+                data.settings.onOpen($(this));
+            }
+            if (data.settings.closeOthers) {
+                $('.customSelectOptions').hide();
+            }
+            data.dom.options.show();
+        },
+
+        close: function() {
+            var data = $(this).data();
+            if (data.settings.onClose) {
+                data.settings.onClose($(this));
+            }
+            data.dom.options.hide();
+        },
+
+        toggle: function() {
+            var data = $(this).data();
+            if (data.dom.options.is(':visible')) {
+                methods.close.call(this);
+            } else {
+                methods.open.call(this);
+            }
         }
     };
 
-    $.fn.customSelect = function(request){
+    $.fn.customSelect = function(request) {
         if (methods[request]) {
             return methods[request].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof request === 'object' || !request) {
             return methods.init.apply(this, arguments);
         } else {
-            $.error('Method '+request+' does not exist on jQuery.tooltip');
+            $.error('Method ' + request + ' does not exist on jQuery.tooltip');
         }
     };
 
