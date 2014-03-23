@@ -119,11 +119,11 @@ function clone(obj) {
             return data.settings[arguments[0]] = arguments[1];
         },
 
-        setItems: function(selected) {
+        setItems: function() {
             var data = $(this).data();
 
             data.index = 0;
-            data.selected = (selected) ? selected : data.items[0];
+            data.selected = (data.selected) ? data.selected : data.items[0];
             data.dom.input.val(data.selected.value);
             data.dom.textElement.text(data.selected.text);
             data.dom.items = [];
