@@ -2,7 +2,7 @@
  * Plugin for customize default selects
  * @author Anton Vahmin (html.ru@gmail.com)
  * @copyright Clever Site Studio (http://clever-site.ru)
- * @version 2.5
+ * @version 2.5.1
  */
 
 function clone(obj) {
@@ -151,7 +151,10 @@ function clone(obj) {
         setItemsJSON: function(items) {
             var data_items = [];
             for (i in items) {
-                var topush = (typeof items[i] == 'object') ? items[i] : {
+                var topush = (typeof items[i] == 'object') ? {
+                    text: items[i][1],
+                    value: items[i][0]
+                } : {
                     text: items[i],
                     value: items[i]
                 };
