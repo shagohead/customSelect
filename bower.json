@@ -1,0 +1,24 @@
+{
+  "name": "customSelect",
+  "version": "2.5.1",
+  "homepage": "https://github.com/LastDanmer/customSelect",
+  "authors": [
+    "LastDanmer <html.ru@gmail.com>"
+  ],
+  "description": "jQuery plugin for customization of selects",
+  "main": "jquery.customSelect.js",
+  "keywords": [
+    "jquery",
+    "select",
+    "selects"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+  ],
+  "dependencies": {
+    "jquery": ">=1.7.0"
+  }
+}
