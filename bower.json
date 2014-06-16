@@ -8,9 +8,9 @@
   "description": "jQuery plugin for customization of selects",
   "main": "jquery.customSelect.js",
   "keywords": [
-    "jquery",
     "select",
-    "selects"
+    "selects",
+    "jquery"
   ],
   "license": "MIT",
   "ignore": [
