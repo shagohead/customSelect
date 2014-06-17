@@ -76,8 +76,8 @@ $.widget('custom.customSelect', {
         var _this = this;
         this.domText.bind('click', function() {
             if (_this.isDisabled === false) {
-                _this._trigger('click', this);
                 _this.toggle();
+                _this._trigger('click', this);
             }
         });
         this.domScroll.on('mousewheel', function() {
@@ -88,7 +88,7 @@ $.widget('custom.customSelect', {
 
     _appendItems: function() {
         var _this = this;
-        this.domItems = [];
+        this.domItems = $();
         this.domText.unbind('click');
 //        $(document).off(this.domItems);
         for (var i = 0; i < this.itemsList.length; i++) {
@@ -104,17 +104,19 @@ $.widget('custom.customSelect', {
                 item = this.options.optionTemplate.call(this, item, this.itemsList[i]);
             }
 
-            item.click(function () {
+            item.click(function (event) {
+                event.preventDefault();
                 if (_this.isDisabled === false) {
-                    _this._trigger('select', this);
                     $(_this).val($(this).data('value'));
-                    var text = ($(this).data('text') != '') ? $(this).data('text') : $(this).text();
-                    _this.domText.html(text);
+                    _this.domText.html(($(this).data('text') != '') ? $(this).data('text') : $(this).text());
+                    _this.domItems.filter('.selected').removeClass('selected');
+                    $(this).addClass('selected');
                     _this.close();
+                    _this._trigger('select', this);
                 }
             });
             this.domScroll.append(item);
-            this.domItems.push(item);
+            this.domItems = this.domItems.add(item);
         }
         this.domScroll.jScrollPane();
 
@@ -149,17 +151,17 @@ $.widget('custom.customSelect', {
 
     open: function() {
         this.domContainer.addClass('customSelectOpen');
-        this._trigger('open');
         if (this.options.closeOthers) {
             $('.customSelectOptions').hide();
         }
         this.domOptions.show();
+        this._trigger('open');
     },
 
     close: function() {
         this.domContainer.removeClass('customSelectOpen');
-        this._trigger('close', this);
         this.domOptions.hide();
+        this._trigger('close', this);
     },
 
     toggle: function() {
