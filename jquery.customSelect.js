@@ -81,7 +81,8 @@ $.widget('custom.customSelect', {
             }
         });
         this.domScroll.on('mousewheel', function() {
-            this.scrollApi.scrollByY(event.deltaY);
+            var scrollApi = _this.domScroll.data('jsp');
+            scrollApi.scrollByY(event.deltaY);
         });
     },
 
@@ -116,7 +117,6 @@ $.widget('custom.customSelect', {
             this.domItems.push(item);
         }
         this.domScroll.jScrollPane();
-        this.scrollApi = this.domScroll.data('jsp');
 
         $(document).click(function() {
             _this.close();
