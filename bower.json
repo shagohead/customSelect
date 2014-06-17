@@ -1,6 +1,6 @@
 {
   "name": "customSelect",
-  "version": "2.5.1",
+  "version": "3.0.0",
   "homepage": "https://github.com/LastDanmer/customSelect",
   "authors": [
     "LastDanmer <html.ru@gmail.com>"
@@ -16,7 +16,7 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
+    "bower_components"
   ],
   "dependencies": {
     "jquery": ">=1.7.0",
